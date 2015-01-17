@@ -84,19 +84,24 @@ The median and mean values seems to be the same. The histogram however seems to 
 
 ## Are there differences in activity patterns between weekdays and weekends?
 ```{r, echo=TRUE}
-dataWeekDay <- dataNoNA
-dataWeekDay$dayname = weekdays(as.Date(dataWeekDay$date))
 
-for(i in 1:nrow(dataWeekDay))
+daytype = function(x) 
 {
-  
-  day <- dataWeekDay[i, ]$dayname
-  if(day %in% c('Saturday','Sunday'))
+  if(x %in% c('Saturday', 'Sunday'))
   {
-    dataWeekDay$isWeekend <- TRUE
-  } else 
+    return('Weekend')
+  }
+  else 
   {
-    dataWeekDay$isWeekend <- FALSE
+    return('Weekday')
   }
 }
+
+dataWeekDay <- dataNoNA
+dataWeekDay$dayname = weekdays(as.Date(dataWeekDay$date))
+dataWeekDay$daytype = as.factor(apply(as.matrix(dataWeekDay$dayname), 1, daytype))
+
+steps_intervalWeekday <- aggregate(steps~interval+daytype, data=dataWeekDay, mean)
+library(lattice)
+xyplot(steps~interval|factor(daytype),data=steps_intervalWeekday,type="l")
 ```
