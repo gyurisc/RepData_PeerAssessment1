@@ -47,10 +47,56 @@ sum(is.na(data$steps))
 ```
 2. Devise a strategy for filling in all of the missing values in the dataset. The strategy does not need to be sophisticated. For example, you could use the mean/median for that day, or the mean for that 5-minute interval, etc.
 
+I will use the mean of the interval to replace a missing value. 
+
 3. Create a new dataset that is equal to the original dataset but with the missing data filled in.
+
+```{r, echo=TRUE}
+dataNoNA<-data
+for(i in 1:nrow(dataNoNA))
+{
+  if(is.na(dataNoNA[i,]$steps))
+  {
+    interval <- dataNoNA[i,]$interval
+    new_value <- steps_interval[steps_interval$interval == interval,]$steps
+    dataNoNA[i,]$steps <- new_value
+  }
+}
+```
 
 4. Make a histogram of the total number of steps taken each day and Calculate and report the **mean** and **median** total number of steps taken per day. Do these values differ from the estimates from the first part of the assignment? What is the impact of imputing missing data on the estimates of the total daily number of steps?
 
+```{r, echo=TRUE}
+library(ggplot2)
 
+total_stepsNoNA <- tapply(dataNoNA$steps, dataNoNA$date, sum)
+qplot(total_stepsNoNA, binwidth=1000, xlab="total number of steps taken each day (NA replaced with mean)")
+
+```
+
+2. The mean and median total number of steps taken per day
+```{r, echo=TRUE}
+mean(total_stepsNoNA, na.rm = TRUE)
+median(total_stepsNoNA, na.rm = TRUE)
+```
+
+The median and mean values seems to be the same. The histogram however seems to be a bit different as the mean column of the histogram seems to be higher. 
 
 ## Are there differences in activity patterns between weekdays and weekends?
+```{r, echo=TRUE}
+dataWeekDay <- dataNoNA
+dataWeekDay$dayname = weekdays(as.Date(dataWeekDay$date))
+
+for(i in 1:nrow(dataWeekDay))
+{
+  
+  day <- dataWeekDay[i, ]$dayname
+  if(day %in% c('Saturday','Sunday'))
+  {
+    dataWeekDay$isWeekend <- TRUE
+  } else 
+  {
+    dataWeekDay$isWeekend <- FALSE
+  }
+}
+```
